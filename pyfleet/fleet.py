@@ -1,6 +1,43 @@
 import subprocess
 
 
+class FleetctlResult(object):
+    code = None
+    output = None
+
+    def __init__(self, code, output):
+        self.code = code
+        self.output = output
+
+
+class Fleetctl(object):
+    command = 'fleetctl'
+
+    def __init__(self, *args):
+        pass
+
+    def call(self, command):
+        try:
+            return subprocess.check_output(command)
+        except TypeError:
+            print 'Attempted checkoutput(' + str(command) + ')'
+            import sys
+            sys.exit(-1)
+
+    def run(self, *args):
+        full_command = [self.command]
+        full_command.extend(*args)
+        try:
+            #import ipdb;ipdb.set_trace()
+            _out = self.call(full_command)
+            return FleetctlResult(code=0, output=_out)
+        except subprocess.CalledProcessError, e:
+            return FleetctlResult(code=e.returncode, output=e.output)
+
+    def __str__(self):
+        return "<Fleetctl>"
+
+
 class Machine(object):
     fleet = None
     machine = None
@@ -24,26 +61,50 @@ class Machine(object):
         return "<Machine %s>" % self.machine
 
 
+class Unit(object):
+    name = None
+    status = None
+    machine = None
+    sub = None
+    unit_hash = None
+    loaded = None
+    fleet = None
+
+    def __init__(self, fleet, datagram):
+        self.fleet = fleet
+        self.name = datagram['unit']
+        self.status = datagram['active']
+        self.machine = datagram['machine']    # TODO: make this a real machine object # noqa
+        self.sub = datagram['sub']
+        self.unit_hash = datagram['hash']
+        self.loaded = datagram['load']
+
+
 class Fleet(object):
     machines = []
     units = []
+    fleetctl = None
 
     def __init__(self):
-        self.machines = self._get_machines()
+        self.fleetctl = Fleetctl()
+        self.machines = self._build_machine_list()
+        #import ipdb; ipdb.set_trace();
 
-    def _list_units(*args):
-        _cmd = ['fleetctl', 'list-units']
-        _cmd.extend(args)
-        return subprocess.check_output(_cmd)
+    def _fleetctl_call(self, *args):
+        return self.fleetctl.run(args)
 
-    def _list_machines(*args):
-        _cmd = ['fleetctl', 'list-machines']
-        _cmd.extend(args)
-        return subprocess.check_output(_cmd)
+    def _list_units(self, *args):
+        """ calls ```fleetctl list-units [args]``` """
+        return self._fleetctl_call('list-units', *args)
 
-    def _get_machines(self):
+    def _list_machines(self, *args):
+        """ calls ```fleetctl list-machines [args] ``` """
+        return self._fleetctl_call('list-machines', *args)
+
+    def _build_machine_list(self):
+        """ Builds machine list """
         _machines = []
-        _resp = self._list_machines('-l', '--no-legend').split("\n")
+        _resp = self._list_machines('-l', '--no-legend').output.split('\n')
 
         for _line in _resp:
             if len(_line):
@@ -69,42 +130,14 @@ class Fleet(object):
 
         return _machines
 
-    def load(self, units):
-        _cmd = ['fleetctl', 'load']
-        if isinstance(units, basestring):
-            units = [units]
-        _cmd.extend(units)
-        print subprocess.check_output(_cmd)
-
-    def unload(self, units):
-        _cmd = ['fleetctl', 'unload']
-        if isinstance(units, basestring):
-            units = [units]
-        _cmd.extend(units)
-        print subprocess.check_output(_cmd)
-
-    def start(self, units):
-        _cmd = ['fleetctl', 'start']
-        if isinstance(units, basestring):
-            units = [units]
-        _cmd.extend(units)
-        print subprocess.check_output(_cmd)
-
-    def stop(self, units):
-        _cmd = ['fleetctl', 'stop']
-        if isinstance(units, basestring):
-            units = [units]
-        _cmd.extend(units)
-        print subprocess.check_output(_cmd)
-
     def list_units(self, *args, **kwargs):
         datagram = []
-        _out = self._list_units('fleetctl',
-                                'list-units',
-                                '-no-legend',
+        units = []
+        #import ipdb; ipdb.set_trace()
+        _out = self._list_units('-no-legend',
                                 '-full',
                                 '-fields',
-                                'active,hash,load,machine,sub,unit')
+                                'active,hash,load,machine,sub,unit').output
         for _line in _out.split('\n'):
             if len(_line.split()) > 0:
                 _active, _hash, _load, _machine_ip, _sub, _unit = _line.split()
@@ -118,4 +151,28 @@ class Fleet(object):
                     'unit': _unit,
                 }
                 datagram.append(_datagram)
-        return datagram
+        for unit in datagram:
+            _unit = Unit(self, unit)
+            units.append(_unit)
+
+        return units
+
+    def list_machines(self):
+        self.machines = self._build_machine_list()
+        return self.machines
+
+    def load(self, units):
+        """ calls ```fleetctl load [units] ``` """
+        return self._fleetctl_call('load', units)
+
+    def unload(self, units):
+        """ calls ```fleetctl unload [units]``` """
+        return self._fleetctl_call('unload', units)
+
+    def start(self, units):
+        """ calls ```fleetctl start [units]``` """
+        return self._fleetctl_call('start', units)
+
+    def stop(self, units):
+        """ calls ```fleetctl stop [units]``` """
+        return self._fleetctl_call('stop', units)
