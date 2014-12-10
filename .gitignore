@@ -9,3 +9,4 @@ local_settings.py
 .ropeproject
 .coverage
 .tox
+*.swp
