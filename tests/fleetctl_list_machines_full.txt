@@ -1,0 +1,10 @@
+1514ec60dc7c466f9880539f04cb3ded	172.31.49.159	environment=production,region=us-east-1,role=django,stack=production
+2e962f8fd97241c3b5d63e1107cdd98e	172.31.53.44	environment=production,region=us-east-1,role=celery,stack=production
+87fec0cfb5d741aca83f63f40c23a94e	172.31.16.158	environment=production,region=us-east-1,role=django,stack=production
+a4b9a1a239fd4084a33eb7a5e032bbd6	172.31.16.5	region=us-east-1b,role=services
+b5e8695f522648868eaf5e2688e569fc	172.31.32.189	environment=test,region=us-east-1,role=celery,stack=test
+d3edfa3d08ab45e1be000d4d78e294c6	172.31.25.23	environment=staging,region=us-east-1,role=celery,stack=staging
+e56967824871439b9de08bb34b5545f2	172.31.60.195	environment=staging,region=us-east-1,role=django,stack=staging
+e7d95d3604804a94ad5e970200dfae07	172.31.48.5	region=us-east-1c,role=services
+ed2992db4dc5428c834dd5a8d2819c26	172.31.32.19	environment=test,region=us-east-1,role=django,stack=test
+efbf782a8f4747dbb329ecdf36822027	172.31.32.5	region=us-east-1a,role=services
