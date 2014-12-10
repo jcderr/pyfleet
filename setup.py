@@ -10,7 +10,7 @@ dependencies = [
 
 setup(
     name='pyfleet',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/jcderr/pyfleet',
     license='BSD',
     author='Jeremy Derr',

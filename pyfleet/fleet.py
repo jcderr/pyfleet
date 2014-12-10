@@ -163,16 +163,16 @@ class Fleet(object):
 
     def load(self, units):
         """ calls ```fleetctl load [units] ``` """
-        return self._fleetctl_call('load', units)
+        return self._fleetctl_call('load', *units)
 
     def unload(self, units):
         """ calls ```fleetctl unload [units]``` """
-        return self._fleetctl_call('unload', units)
+        return self._fleetctl_call('unload', *units)
 
     def start(self, units):
         """ calls ```fleetctl start [units]``` """
-        return self._fleetctl_call('start', units)
+        return self._fleetctl_call('start', *units)
 
     def stop(self, units):
         """ calls ```fleetctl stop [units]``` """
-        return self._fleetctl_call('stop', units)
+        return self._fleetctl_call('stop', *units)
